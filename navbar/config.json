@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "menuWidth": 300,
+    "itemWidth": 80,
+    "navElements": [
+      "home",
+      "articles",
+      "blog posts",
+      "about me",
+      "projects",
+      "portfolio"
+    ]
+  }
+}
