@@ -23,14 +23,14 @@ const requestOptions = {
 const request = new Request('http://localhost:3000/navbar', requestOptions);
 
 function setAttributes(el, attributes) {
-  for (var key in attributes) {
+  for (const key in attributes) {
     el.setAttribute(key, attributes[key]);
   }
+  return el;
 }
 
 function navbarElement (attributes) {
   const navElement = document.querySelector('nav');
-  navElement.setAttribute('role', 'navigation');
 
   setAttributes(navElement, attributes);
 
