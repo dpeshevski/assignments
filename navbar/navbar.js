@@ -68,29 +68,33 @@ function createList (children, width) {
   return liEl;
 }
 
-function createAnchor (child) {
+function createAnchor (element) {
   const anchorEl = document.createElement('a');
 
-  anchorEl.innerHTML = child;
+  anchorEl.innerHTML = element;
 
   return anchorEl;
 }
 
-function createMenuList (children, attributes, config) {
+function createMenuList ({ elements, attributes, width }) {
   const list = [];
 
-  for (const child of children) {
-    list.push(createList(createAnchor(child), config.itemWidth));
+  for (const element of elements) {
+    list.push(createList(createAnchor(element), width));
   }
 
-  return createUnorderedList(list, attributes);
+  return createUnorderedList(list, attributes || null);
 }
 
-function craeteDropdownMenuList (children, config) {
+function craeteDropdownMenuList (config) {
   const anchorMore = createAnchor('More');
-  const menuList = createMenuList(children, { "class": "dropdown", "aria-label": "submenu" }, { itemWidth: config.itemWidth });
+  const attributes = { "class": "dropdown", "aria-label": "submenu" };
 
-  return createList([anchorMore, menuList], config.width);
+  const { elements, width: { itemWidth, moreListWidth } } = config;
+
+  const menuList = createMenuList({ elements, attributes, width: itemWidth });
+
+  return createList([anchorMore, menuList], moreListWidth);
 }
 
 function fetchingData (request) {
@@ -112,18 +116,40 @@ async function makeNavbar () {
   const { itemWidth, menuWidth, navElements } = navbarResponseData; // use data from then() method if you want to use Fetch APi directly here insead of this approach
   let menuList;
 
+  let menuConfig = {}; 
+
   if ((navElements.length * itemWidth) <= menuWidth) {
-    menuList = createMenuList(navElements, null, { itemWidth });  
+    menuConfig = {
+      elements: navElements,
+      width: itemWidth
+    };
+  
+    menuList = createMenuList(menuConfig);  
   } else {
     let size = menuWidth / itemWidth;
 
-    const navs = navElements.slice(0, parseInt(size));
-    menuList = createMenuList(navs, null, { itemWidth });
+    const navElementsSliced = navElements.slice(0, parseInt(size));
 
-    const dropDownMenuContent = navElements.slice(size);
+    menuConfig = {
+      elements: navElementsSliced,
+      width: itemWidth
+    };
+
+    menuList = createMenuList(menuConfig);
+
+    const elements = navElements.slice(size);
     const remainingWidth = Math.round((size % 1) * itemWidth);
     const moreListWidth = remainingWidth > 0 && remainingWidth < 33 ? 60 : remainingWidth;
-    menuList.appendChild(craeteDropdownMenuList(dropDownMenuContent, { width: moreListWidth, itemWidth }));
+
+    const dropDownMenuConfig = {
+      elements,
+      width: {
+        moreListWidth,
+        itemWidth
+      }
+    };
+
+    menuList.appendChild(craeteDropdownMenuList(dropDownMenuConfig));
   }
 
   navElement.appendChild(menuList);
