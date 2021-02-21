@@ -117,9 +117,9 @@ function createUnorderedList ({ ...props }) {
 }
 
 function createList ({ ...props }) {
-  const { children, attributes, width } = props;
+  const { elements, attributes, width } = props;
 
-  const liEl = createChildren('li', children);
+  const liEl = createChildren('li', elements);
   setAttributes(liEl, attributes || null);
 
   liEl.style.width = `${width}px`;
@@ -140,15 +140,12 @@ function createMenuList ({ ...props }) {
 
   const list = [];
 
+  const menu = new Menu();
+
   for (const element of elements) {
-    const listConfig = {
-      children: createAnchor(element),
-      attributes: {
-        class: 'nav-item'
-      },
-      width
-    }
-    list.push(createList(listConfig));
+    menu.setConfig(createAnchor(element), { class: 'nav-item'}, width);
+
+    list.push(createList(menu.conifg));
   }
 
   return createUnorderedList({ children: list, attributes });
@@ -160,15 +157,11 @@ function craeteDropdownMenuList (config) {
 
   const menuList = createMenuList({ elements, attributes, width: itemWidth });
 
-  const listConfig = {
-    children: [anchorMore, menuList],
-    attributes: {
-      class: 'dropdown-list'
-    },
-    width: moreListWidth
-  }
+  const menu = new Menu();
 
-  return createList(listConfig);
+  menu.setConfig([anchorMore, menuList], { class: 'dropdown-list' }, moreListWidth);
+
+  return createList(menu.conifg);
 }
 
 async function makeNavbar () {
