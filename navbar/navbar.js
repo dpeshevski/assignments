@@ -170,7 +170,7 @@ async function makeNavbar () {
 
   const navbar = await fetchingNavbar();
 
-  const { tagNames, itemWidth, menuWidth, navElements } = navbar;
+  const { tagName, itemWidth, menuWidth, navElements } = navbar;
   let menuList;
 
   let menu = new Menu();
@@ -181,20 +181,20 @@ async function makeNavbar () {
   };
 
   if ((navElements.length * itemWidth) <= menuWidth) {
-    menu.setConfig(tagNames, navElements, menuAttributes, itemWidth);
+    menu.setConfig(tagName, navElements, menuAttributes, itemWidth);
     menuList = createMenuList(menu.conifg);  
   } else {
     let size = menuWidth / itemWidth;
 
     const navElementsSliced = navElements.slice(0, parseInt(size));
-    menu.setConfig(tagNames, navElementsSliced, menuAttributes, itemWidth);
+    menu.setConfig(tagName, navElementsSliced, menuAttributes, itemWidth);
     menuList = createMenuList(menu.conifg);
 
     const elements = navElements.slice(size);
     const remainingWidth = Math.round((size % 1) * itemWidth);
     const moreListWidth = remainingWidth < 33 ? 60 : remainingWidth;
 
-    menu.setConfig(tagNames, elements, { class: 'dropdown', "aria-label": 'submenu' }, { moreListWidth, itemWidth });
+    menu.setConfig(tagName, elements, { class: 'dropdown', "aria-label": 'submenu' }, { moreListWidth, itemWidth });
     menuList.appendChild(craeteDropdownMenuList(menu.conifg));
   }
 

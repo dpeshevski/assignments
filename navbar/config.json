@@ -10,7 +10,7 @@
       "projects",
       "portfolio"
     ],
-    "tagNames": {
+    "tagName": {
       "parent": "ul",
       "child": "li"
     }
