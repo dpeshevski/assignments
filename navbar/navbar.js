@@ -139,7 +139,7 @@ async function makeNavbar () {
 
     const elements = navElements.slice(size);
     const remainingWidth = Math.round((size % 1) * itemWidth);
-    const moreListWidth = remainingWidth > 0 && remainingWidth < 33 ? 60 : remainingWidth;
+    const moreListWidth = remainingWidth < 33 ? 60 : remainingWidth;
 
     const dropDownMenuConfig = {
       elements,
