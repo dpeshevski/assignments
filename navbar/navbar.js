@@ -191,7 +191,7 @@ async function makeNavbar () {
   };
 
   if ((navElements.length * itemWidth) <= menuWidth) {
-    menu.setConfig(navElement, menuAttributes, itemWidth);
+    menu.setConfig(navElements, menuAttributes, itemWidth);
     menuList = createMenuList(menu.conifg);  
   } else {
     let size = menuWidth / itemWidth;
