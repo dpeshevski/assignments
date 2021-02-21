@@ -52,17 +52,19 @@ function createChildren(parentEl, elements) {
 }
 
 
-function createUnorderedList (children, attributes) {
-  const ulEl = createChildren('ul', children);
+function createUnorderedList ({ ...props }) {
+  const { children, attributes } = props;
 
+  const ulEl = createChildren('ul', children);
   setAttributes(ulEl, attributes || null);
 
   return ulEl;
 }
 
-function createList ({ children, attributes, width }) {
-  const liEl = createChildren('li', children);
+function createList ({ ...props }) {
+  const { children, attributes, width } = props;
 
+  const liEl = createChildren('li', children);
   setAttributes(liEl, attributes || null);
 
   liEl.style.width = `${width}px`;
@@ -78,26 +80,28 @@ function createAnchor (element) {
   return anchorEl;
 }
 
-function createMenuList ({ elements, attributes, width }) {
+function createMenuList ({ ...props }) {
+  const { elements, attributes, width } = props;
+
   const list = [];
 
   for (const element of elements) {
     const listConfig = {
       children: createAnchor(element),
       attributes: {
-        class: "nav-item"
+        class: 'nav-item'
       },
       width
     }
     list.push(createList(listConfig));
   }
 
-  return createUnorderedList(list, attributes);
+  return createUnorderedList({ children: list, attributes });
 }
 
 function craeteDropdownMenuList (config) {
   const anchorMore = createAnchor('More');
-  const attributes = { class: "dropdown", "aria-label": "submenu" };
+  const attributes = { class: 'dropdown', "aria-label": 'submenu' };
 
   const { elements, width: { itemWidth, moreListWidth } } = config;
 
@@ -122,7 +126,7 @@ function fetchingData (request) {
 }
 
 async function makeNavbar () {
-  const navElement = navbarElement({ class: "navbar", role: "navigation" });
+  const navElement = navbarElement({ class: 'navbar', role: 'navigation' });
 
   const navbarResponseData = await fetchingData(request);
 
@@ -136,8 +140,8 @@ async function makeNavbar () {
   let menuConfig = {}; 
 
   const menuAttributes = {
-    class: "nav-items",
-    "aria-label": "menu"
+    class: 'nav-items',
+    "aria-label": 'menu'
   };
 
   if ((navElements.length * itemWidth) <= menuWidth) {
