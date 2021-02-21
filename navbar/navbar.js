@@ -7,20 +7,75 @@
  or just show the elements
  *  */  
 
-const headersOptions = {
-  "Content-Type": 'application/json'
+class Menu {
+  constructor(elements, attributes, width) {
+    this._elements = elements;
+    this._attributes = attributes;
+    this._width = width;
+  }
+
+  get elements() {
+    return this._elements;
+  }
+
+  get attributes() {
+    return this._attributes;
+  }
+
+  get width() {
+    return this._width;
+  }
+
+  get conifg() {
+    return {
+      elements: this.elements,
+      attributes: this.attributes,
+      width: this.width
+    }
+  }
+
+  set elements(elements) {
+    this._elements = elements;
+  }
+
+  set attributes(attributes) {
+    this._attributes = attributes;
+  }
+
+  set width(width) {
+    this._width = width;
+  }
+
+  setConfig(elements, attributes, width) {
+    this.elements = elements;
+    this.attributes = attributes;
+    this.width = width;
+  }
 }
 
-const headers = new Headers(headersOptions);
+const baseURL = 'http://localhost:3000';
 
-const requestOptions = {
-  method: 'GET',
-  headers,
-  mode: 'cors',
-  cache: 'default'
+function fetchingNavbar () {
+  const headersOptions = {
+    "Content-Type": 'application/json'
+  }
+
+  const headers = new Headers(headersOptions);
+
+  const requestOptions = {
+    method: 'GET',
+    headers,
+    mode: 'cors',
+    cache: 'default'
+  }
+
+  const request = new Request(`${baseURL}/navbar`, requestOptions);
+
+  return fetch(request)
+    .then(response => response.json())
+    .then(data => data)
+    .catch(e => console.error(e));
 }
-
-const request = new Request('http://localhost:3000/navbar', requestOptions);
 
 function setAttributes(el, attributes) {
   for (const key in attributes) {
@@ -101,9 +156,7 @@ function createMenuList ({ ...props }) {
 
 function craeteDropdownMenuList (config) {
   const anchorMore = createAnchor('More');
-  const attributes = { class: 'dropdown', "aria-label": 'submenu' };
-
-  const { elements, width: { itemWidth, moreListWidth } } = config;
+  const { elements, attributes, width: { itemWidth, moreListWidth } } = config;
 
   const menuList = createMenuList({ elements, attributes, width: itemWidth });
 
@@ -118,26 +171,19 @@ function craeteDropdownMenuList (config) {
   return createList(listConfig);
 }
 
-function fetchingData (request) {
-  return fetch(request)
-    .then(response => response.json())
-    .then(data => data)
-    .catch(e => console.error(e));
-}
-
 async function makeNavbar () {
   const navElement = navbarElement({ class: 'navbar', role: 'navigation' });
 
-  const navbarResponseData = await fetchingData(request);
+  const navbar = await fetchingNavbar();
 
   // Use the Fetch API
   // fetch(request)
   // .then(response => response.json())
   // .then(data => {
-  const { itemWidth, menuWidth, navElements } = navbarResponseData; // use data from then() method if you want to use Fetch APi directly here insead of this approach
+  const { itemWidth, menuWidth, navElements } = navbar; // use data from then() method if you want to use Fetch APi directly here insead of this approach
   let menuList;
 
-  let menuConfig = {}; 
+  let menu = new Menu();
 
   const menuAttributes = {
     class: 'nav-items',
@@ -145,39 +191,22 @@ async function makeNavbar () {
   };
 
   if ((navElements.length * itemWidth) <= menuWidth) {
-    menuConfig = {
-      elements: navElements,
-      attributes: menuAttributes,
-      width: itemWidth
-    };
-
-    menuList = createMenuList(menuConfig);  
+    menu.setConfig(navElement, menuAttributes, itemWidth);
+    menuList = createMenuList(menu.conifg);  
   } else {
     let size = menuWidth / itemWidth;
 
     const navElementsSliced = navElements.slice(0, parseInt(size));
 
-    menuConfig = {
-      elements: navElementsSliced,
-      attributes: menuAttributes,
-      width: itemWidth
-    };
-
-    menuList = createMenuList(menuConfig);
+    menu.setConfig(navElementsSliced, menuAttributes, itemWidth);
+    menuList = createMenuList(menu.conifg);
 
     const elements = navElements.slice(size);
     const remainingWidth = Math.round((size % 1) * itemWidth);
     const moreListWidth = remainingWidth < 33 ? 60 : remainingWidth;
 
-    const dropDownMenuConfig = {
-      elements,
-      width: {
-        moreListWidth,
-        itemWidth
-      }
-    };
-
-    menuList.appendChild(craeteDropdownMenuList(dropDownMenuConfig));
+    menu.setConfig(elements, { class: 'dropdown', "aria-label": 'submenu' }, { moreListWidth, itemWidth });
+    menuList.appendChild(craeteDropdownMenuList(menu.conifg));
   }
 
   navElement.appendChild(menuList);
