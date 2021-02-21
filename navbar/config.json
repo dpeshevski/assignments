@@ -9,6 +9,10 @@
       "about me",
       "projects",
       "portfolio"
-    ]
+    ],
+    "tagNames": {
+      "parent": "ul",
+      "child": "li"
+    }
   }
 }

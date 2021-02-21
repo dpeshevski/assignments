@@ -8,10 +8,15 @@
  *  */  
 
 class Menu {
-  constructor(elements, attributes, width) {
+  constructor(tagName, elements, attributes, width) {
+    this._tagName = tagName;
     this._elements = elements;
     this._attributes = attributes;
     this._width = width;
+  }
+
+  get tagName() {
+    return this._tagName;
   }
 
   get elements() {
@@ -28,10 +33,15 @@ class Menu {
 
   get conifg() {
     return {
+      tagName: this.tagName,
       elements: this.elements,
       attributes: this.attributes,
       width: this.width
     }
+  }
+
+  set tagName(value) {
+    this._tagName = value;
   }
 
   set elements(elements) {
@@ -46,7 +56,8 @@ class Menu {
     this._width = width;
   }
 
-  setConfig(elements, attributes, width) {
+  setConfig(tagName, elements, attributes, width) {
+    this.tagName = tagName;
     this.elements = elements;
     this.attributes = attributes;
     this.width = width;
@@ -106,25 +117,15 @@ function createChildren(parentEl, elements) {
   return parentEl;
 }
 
+function createList({ ...props }) {
+  const { tagName, elements, attributes, width } = props;
 
-function createUnorderedList ({ ...props }) {
-  const { children, attributes } = props;
+  const listEl = createChildren(tagName, elements);
+  setAttributes(listEl, attributes || null);
 
-  const ulEl = createChildren('ul', children);
-  setAttributes(ulEl, attributes || null);
+  listEl.style.width = `${width}px` || '';
 
-  return ulEl;
-}
-
-function createList ({ ...props }) {
-  const { elements, attributes, width } = props;
-
-  const liEl = createChildren('li', elements);
-  setAttributes(liEl, attributes || null);
-
-  liEl.style.width = `${width}px`;
-
-  return liEl;
+  return listEl;
 }
 
 function createAnchor (element) {
@@ -136,32 +137,32 @@ function createAnchor (element) {
 }
 
 function createMenuList ({ ...props }) {
-  const { elements, attributes, width } = props;
+  const { tagName: { parent, child }, elements, attributes, width } = props;
 
-  const list = [];
+  const listElements = [];
 
   const menu = new Menu();
 
   for (const element of elements) {
-    menu.setConfig(createAnchor(element), { class: 'nav-item'}, width);
+    menu.setConfig(child, createAnchor(element), { class: 'nav-item'}, width);
 
-    list.push(createList(menu.conifg));
+    listElements.push(createList(menu.conifg));
   }
 
-  return createUnorderedList({ children: list, attributes });
+  return createList({ tagName: parent, elements: listElements, attributes });
 }
 
 function craeteDropdownMenuList (config) {
   const anchorMore = createAnchor('More');
-  const { elements, attributes, width: { itemWidth, moreListWidth } } = config;
+  const { tagName, elements, attributes, width: { itemWidth, moreListWidth } } = config;
 
-  const menuList = createMenuList({ elements, attributes, width: itemWidth });
+  const menuList = createMenuList({ tagName, elements, attributes, width: itemWidth });
 
   const menu = new Menu();
 
-  menu.setConfig([anchorMore, menuList], { class: 'dropdown-list' }, moreListWidth);
+  menu.setConfig(tagName.child, [anchorMore, menuList], { class: 'dropdown-list' }, moreListWidth);
 
-  return createList(menu.conifg);
+  return createList({ tagName: tagName.parent, ...menu.conifg });
 }
 
 async function makeNavbar () {
@@ -169,11 +170,7 @@ async function makeNavbar () {
 
   const navbar = await fetchingNavbar();
 
-  // Use the Fetch API
-  // fetch(request)
-  // .then(response => response.json())
-  // .then(data => {
-  const { itemWidth, menuWidth, navElements } = navbar; // use data from then() method if you want to use Fetch APi directly here insead of this approach
+  const { tagNames, itemWidth, menuWidth, navElements } = navbar;
   let menuList;
 
   let menu = new Menu();
@@ -184,27 +181,24 @@ async function makeNavbar () {
   };
 
   if ((navElements.length * itemWidth) <= menuWidth) {
-    menu.setConfig(navElements, menuAttributes, itemWidth);
+    menu.setConfig(tagNames, navElements, menuAttributes, itemWidth);
     menuList = createMenuList(menu.conifg);  
   } else {
     let size = menuWidth / itemWidth;
 
     const navElementsSliced = navElements.slice(0, parseInt(size));
-
-    menu.setConfig(navElementsSliced, menuAttributes, itemWidth);
+    menu.setConfig(tagNames, navElementsSliced, menuAttributes, itemWidth);
     menuList = createMenuList(menu.conifg);
 
     const elements = navElements.slice(size);
     const remainingWidth = Math.round((size % 1) * itemWidth);
     const moreListWidth = remainingWidth < 33 ? 60 : remainingWidth;
 
-    menu.setConfig(elements, { class: 'dropdown', "aria-label": 'submenu' }, { moreListWidth, itemWidth });
+    menu.setConfig(tagNames, elements, { class: 'dropdown', "aria-label": 'submenu' }, { moreListWidth, itemWidth });
     menuList.appendChild(craeteDropdownMenuList(menu.conifg));
   }
 
   navElement.appendChild(menuList);
-  // })
-  // .catch(err => console.error(err));
 }
 
 window.onload = makeNavbar();
