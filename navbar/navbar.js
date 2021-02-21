@@ -55,13 +55,15 @@ function createChildren(parentEl, elements) {
 function createUnorderedList (children, attributes) {
   const ulEl = createChildren('ul', children);
 
-  setAttributes(ulEl, attributes);
+  setAttributes(ulEl, attributes || null);
 
   return ulEl;
 }
 
-function createList (children, width) {
+function createList ({ children, attributes, width }) {
   const liEl = createChildren('li', children);
+
+  setAttributes(liEl, attributes || null);
 
   liEl.style.width = `${width}px`;
 
@@ -80,21 +82,36 @@ function createMenuList ({ elements, attributes, width }) {
   const list = [];
 
   for (const element of elements) {
-    list.push(createList(createAnchor(element), width));
+    const listConfig = {
+      children: createAnchor(element),
+      attributes: {
+        class: "nav-item"
+      },
+      width
+    }
+    list.push(createList(listConfig));
   }
 
-  return createUnorderedList(list, attributes || null);
+  return createUnorderedList(list, attributes);
 }
 
 function craeteDropdownMenuList (config) {
   const anchorMore = createAnchor('More');
-  const attributes = { "class": "dropdown", "aria-label": "submenu" };
+  const attributes = { class: "dropdown", "aria-label": "submenu" };
 
   const { elements, width: { itemWidth, moreListWidth } } = config;
 
   const menuList = createMenuList({ elements, attributes, width: itemWidth });
 
-  return createList([anchorMore, menuList], moreListWidth);
+  const listConfig = {
+    children: [anchorMore, menuList],
+    attributes: {
+      class: 'dropdown-list'
+    },
+    width: moreListWidth
+  }
+
+  return createList(listConfig);
 }
 
 function fetchingData (request) {
@@ -105,7 +122,7 @@ function fetchingData (request) {
 }
 
 async function makeNavbar () {
-  const navElement = navbarElement({ "role": "navigation" });
+  const navElement = navbarElement({ class: "navbar", role: "navigation" });
 
   const navbarResponseData = await fetchingData(request);
 
@@ -118,12 +135,18 @@ async function makeNavbar () {
 
   let menuConfig = {}; 
 
+  const menuAttributes = {
+    class: "nav-items",
+    "aria-label": "menu"
+  };
+
   if ((navElements.length * itemWidth) <= menuWidth) {
     menuConfig = {
       elements: navElements,
+      attributes: menuAttributes,
       width: itemWidth
     };
-  
+
     menuList = createMenuList(menuConfig);  
   } else {
     let size = menuWidth / itemWidth;
@@ -132,6 +155,7 @@ async function makeNavbar () {
 
     menuConfig = {
       elements: navElementsSliced,
+      attributes: menuAttributes,
       width: itemWidth
     };
 
